@@ -1,3 +1,4 @@
+package Module3;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,7 +11,7 @@ public class NumberGuesser4 {
     private int maxLevel = 1;
     private int level = 1;
     private int strikes = 0;
-    private int maxStrikes = 5;
+    private int maxStrikes;
     private int number = -1;
     private boolean pickNewRandom = true;
     private Random random = new Random();
@@ -131,6 +132,15 @@ public class NumberGuesser4 {
             pickNewRandom = true;
         } else {
             System.out.println("That's wrong");
+            //ms75 2/12/24
+            //Added an if statement to compare the value of the variable guess and the variable number to display higher or lower
+            if (strikes < maxStrikes - 1) {
+                if (guess < number) {
+                    System.out.println("Oops a little higher!\n");
+                } else {
+                    System.out.println("Oops a little lower!\n");
+                }
+            }    
             strikes++;
             if (strikes >= maxStrikes) {
                 lose();
@@ -152,10 +162,36 @@ public class NumberGuesser4 {
         return guess;
     }
 
+
+    // ms75 2/12/24
+//setDifficulty method created to have user type in the difficulty level
+//I also added a default case if the user types something wrong
+    private void setDifficulty() {
+        System.out.println("Choose a difficulty: (easy, medium, hard)");
+        Scanner scan = new Scanner(System.in);
+        String difficulty = scan.nextLine().toLowerCase();
+        switch (difficulty) {
+            case "easy":
+                maxStrikes = 10;
+                break;
+            case "medium":
+                maxStrikes = 5;
+                break;
+            case "hard":
+                maxStrikes = 3;
+                break;
+            default:
+                System.out.println("Invalid entry, defaulting level set to medium.");
+                maxStrikes = 5;
+                break;
+        }
+    }
+
     public void start() {
         try (Scanner input = new Scanner(System.in);) {
             System.out.println("Welcome to NumberGuesser4.0");
             System.out.println("To exit, type the word 'quit'.");
+            setDifficulty(); // I added the method I created earlier to initiate in the start of the game
             loadState();
             do {
                 if (pickNewRandom) {
