@@ -116,46 +116,55 @@ private String playerName;
        } else if (isQuit(text)) {
            isRunning = false;
            return true;
-    //
-    //
-    //
-    //
-    //
     //New Code Starts MS75
+    //
+    //
+    //
+    //
+    //
        }else if (text.equalsIgnoreCase("Play Coin Toss")) {
         playerName = Name();
-        playCoinToss();
+        coinToss();
         return true;
     } else if (text.startsWith("/pm") || text.startsWith("/dm")) {
-        sendPrivateMessage(text);
+        //asks forname
+        if (playerName == null) {
+            playerName = Name();
+        }
+        sendMessage(text);
         return true;
     }
+    // 
+    //
+    // New Code Ends MS75
+
     return false;
 }
     
-
+// New Code Starts MS75 2/21/24
+//
+//
+    //not sure if i need this anymore 
    private String Name() {
-    System.out.println("Enter Your Name:");
+    System.out.println("Enter Your FIRST Name:");
     Scanner si = new Scanner(System.in);
     return si.nextLine();
    }
 
-   private void playCoinToss() throws IOException {
+   private void coinToss() throws IOException {
     Random random = new Random();
     boolean isHeads = random.nextBoolean();
     String result = isHeads ? "Heads" : "Tails";
     System.out.println(playerName + " flipped a coin and got " + result);
     out.writeObject("/cointoss " + playerName + " " + result);
 }
-private void sendPrivateMessage(String text) throws IOException {
-    // Parse the command to extract target username and message
+private void sendMessage(String text) throws IOException {
     String[] parts = text.split(" ", 3);
     String targetUsername = parts[1];
     String message = parts[2];
-
-    // Send the private message to the server
-    out.writeObject("/pm " + targetUsername + " " + message);
+    out.writeObject("/pm " + targetUsername + " " + playerName + ": " + message);
 }
+
 
 //
 //

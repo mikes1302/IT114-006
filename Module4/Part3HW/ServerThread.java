@@ -50,18 +50,28 @@ public class ServerThread extends Thread {
     @Override
     public void run() {
         info("Thread starting");
+        String fromClient;
         try (ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
                 ObjectInputStream in = new ObjectInputStream(client.getInputStream());) {
             this.out = out;
             isRunning = true;
-            String fromClient;
-            while (isRunning && // flag to let us easily control the loop
-                    (fromClient = (String) in.readObject()) != null // reads an object from inputStream (null would
-                                                                    // likely mean a disconnect)
-            ) {
+//
+//
+//New code Starts MS75 2/21/24
+            send("Please enter your name: ");
+            String clientName = (String) in.readObject();
+            info("Client '" + clientName + "' connected");
+            server.setClientUsername(this.getId(), clientName);
 
-                info("Received from client: " + fromClient);
+
+
+// New Code Ends
+            while (isRunning && (fromClient = (String) in.readObject()) != null) {
+                info("Received from client '" + clientName + "': " + fromClient);
                 server.broadcast(fromClient, this.getId());
+            }
+            {
+
             } // close while loop
         } catch (Exception e) {
             // happens when client disconnects

@@ -17,7 +17,6 @@ public class Server {
    private List<ServerThread> clients = new ArrayList<ServerThread>();
    private Map<Long, String> clientUsernames = new HashMap<>();
 
-
    private void start(int port) {
        this.port = port;
        // server listening
@@ -54,29 +53,30 @@ public class Server {
 
            return;
        }
-       //new code begins MS75
+       //new code begins MS75 2/21/24
        //
        //
        //
        //
        //
        if (message.startsWith("/cointoss")) {
-        // Coin Toss message, broadcast to all clients
         String[] parts = message.split(" ", 4);
         String playerName = parts[1];
         String result = parts[2];
         message = playerName + " flipped a coin and got " + result;
-    } else if (message.startsWith("/pm")) {
-        // Private Message, send to the target client and sender
-        String[] parts = message.split(" ", 3);
+    } 
+    if (message.startsWith("/pm" ) || message.startsWith("/pm" )) {
+        String[] parts = message.split(" ", 4);
+        String senderName = getClientUsername(id);
         String targetUsername = parts[1];
-        String privateMessage = parts[2];
+        String privateMessage = parts[2] + " " + senderName + ": " + parts[3];
         long targetClientId = findClientUsername(targetUsername);
         if (targetClientId != -1) {
             sendMessage(privateMessage, id, targetClientId);
             return;
         }
-        }
+    }
+    
     //
     //
     //
@@ -108,6 +108,13 @@ public class Server {
    //
    //
    // 
+    protected synchronized void setClientUsername(long clientId, String username) {
+        clientUsernames.put(clientId, username);
+    }
+    private String getClientUsername(long clientId) {
+        return clientUsernames.get(clientId);
+    }
+
     private void sendMessage(String privateMessage, long senderId, long targetId) {
         ServerThread sender = findClientID(senderId);
         ServerThread target = findClientID(targetId);
