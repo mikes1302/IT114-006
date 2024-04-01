@@ -1,4 +1,4 @@
-package Project;
+package Project.Client;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
