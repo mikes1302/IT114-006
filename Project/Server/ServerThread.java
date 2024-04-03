@@ -235,6 +235,14 @@ public class ServerThread extends Thread {
                 List<String> potentialRooms = Room.listRooms(searchString, limit);
                 this.sendListRooms(potentialRooms);
                 break;
+            case FLIP:
+            flip();
+                break;
+            case HELLO:
+                currentRoom.sendMessage(this, "hello, hello, hello");
+                break;
+            
+
             default:
                 break;
 
@@ -242,6 +250,52 @@ public class ServerThread extends Thread {
 
     }
 
+    private void flip() {
+        int result = (int) (Math.random() * 2); // Generates 0 or 1
+        String message = (result == 0) ? "Heads" : "Tails";
+        sendMessage(this.getClientId(), "Coin flip result: " + message);
+    }
+    
+/*private void roll(String param) {
+        if (param.matches("\\d+d\\d+")) {
+            String[] parts = param.split("d");
+            int numberOfDice = Integer.parseInt(parts[0]);
+            int faces = Integer.parseInt(parts[1]);
+            int total = 0;
+            StringBuilder result = new StringBuilder();
+            result.append("Rolled ");
+            for (int i = 0; i < numberOfDice; i++) {
+                int roll = (int) (Math.random() * faces) + 1;
+                result.append(roll);
+                total += roll;
+                if (i < numberOfDice - 1) {
+                    result.append(", ");
+                }
+            }
+            result.append(" for a total of ").append(total);
+            sendMessage(this.getClientId(), result.toString());
+        } else {
+            int end;
+            try {
+                end = Integer.parseInt(param);
+            } catch (NumberFormatException e) {
+                logger.warning(String.format("\"Wrong format type /roll n where n is a number or ndn to roll dice where the first number\"\n" +
+                        " is the number of dice and the second number is the face on the dices.\""));
+                return;
+            }
+            if (end <= 0) {
+                logger.warning(String.format("Please use a number greater than 0"));
+                return;
+            }
+    
+            int value = (int) (Math.random() * (end + 1));
+            currentRoom.sendMessage(this.getClientId(), param);
+            sendMessage(this.getClientId(), String.format("Rolled a %d", value));
+        }
+    }
+    
+    
+*/
     private void cleanup() {
         info("Thread cleanup() start");
         try {

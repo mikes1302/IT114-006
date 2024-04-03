@@ -37,6 +37,9 @@ public enum Client {
     private static final String LIST_ROOMS = "/listrooms";
     private static final String LIST_USERS = "/users";
     private static final String DISCONNECT = "/disconnect";
+    private static final String HELLO_COMMAND = "/hello";
+    private static final String ROLL_COMMAND = "/roll";
+    private static final String FLIP_COMMAND = "/flip";
 
     // client id, is the key, client name is the value
     private ConcurrentHashMap<Long, String> clientsInRoom = new ConcurrentHashMap<Long, String>();
@@ -189,10 +192,26 @@ public enum Client {
             }
             return true;
         }
+        else if (text.equalsIgnoreCase(HELLO_COMMAND)) {
+            try {
+                sendHello();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
         return false;
     }
 
     // Send methods
+    
+    private void sendHello() throws IOException {
+        Payload p = new Payload();
+        p.setPayloadType(PayloadType.HELLO);
+        out.writeObject(p);
+    }
+    
+    
     private void sendDisconnect() throws IOException {
         ConnectionPayload cp = new ConnectionPayload();
         cp.setPayloadType(PayloadType.DISCONNECT);
