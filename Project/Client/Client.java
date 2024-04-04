@@ -37,6 +37,10 @@ public enum Client {
     private static final String LIST_ROOMS = "/listrooms";
     private static final String LIST_USERS = "/users";
     private static final String DISCONNECT = "/disconnect";
+// Added command Strigs for commands: /hello,/roll and /flip
+    private static final String HELLO_COMMAND = "/hello";
+    private static final String ROLL_COMMAND = "/roll";
+    private static final String FLIP_COMMAND = "/flip";
 
     // client id, is the key, client name is the value
     private ConcurrentHashMap<Long, String> clientsInRoom = new ConcurrentHashMap<Long, String>();
@@ -189,10 +193,72 @@ public enum Client {
             }
             return true;
         }
+ // New Code Begins
+ // MS75
+ // 4-2-24
+ //     Here I added the test /Hello command into the processCommand() method 
+        else if (text.equalsIgnoreCase(HELLO_COMMAND)) {
+            try {
+                sendHello();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+ //     Here I added the /roll command into the processCommand() method          
+        else if (text.equalsIgnoreCase(ROLL_COMMAND)) {
+            try {
+                sendRoll(text); 
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+ //     Here I added the /flip command into the processCommand() method          
+        else if (text.equalsIgnoreCase(FLIP_COMMAND)){
+            try{
+                sendFlip();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+            return true;
+                }
+        
+        
+//  4-2-24
+//  MS75
+//  New Code Ends
         return false;
     }
 
     // Send methods
+    
+//  New Code Begins
+//  MS75
+// 4-2-24   
+//      Here I added the send methods for payloadTypes: HELLO, FLIP and ROLL
+//      to allow the payloads to be created in the serverThreads
+    private void sendHello() throws IOException {
+        Payload p = new Payload();
+        p.setPayloadType(PayloadType.HELLO);
+        out.writeObject(p);
+    }
+    private void sendFlip() throws IOException {
+        Payload p = new Payload();
+        p.setPayloadType(PayloadType.FLIP);
+        out.writeObject(p);
+    }
+    
+    private void sendRoll(String roll) throws IOException {
+        Payload p = new Payload();
+        p.setPayloadType(PayloadType.ROLL);
+        p.setMessage(roll);
+        out.writeObject(p);
+    }
+
+//  4-2-24
+//  MS75
+//  New Code Ends
     private void sendDisconnect() throws IOException {
         ConnectionPayload cp = new ConnectionPayload();
         cp.setPayloadType(PayloadType.DISCONNECT);

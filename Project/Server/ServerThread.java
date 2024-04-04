@@ -211,8 +211,16 @@ public class ServerThread extends Thread {
                 break;
             case MESSAGE:
                 if (currentRoom != null) {
-                    currentRoom.sendMessage(this, p.getMessage());
-                } else {
+//  New Code Begins
+//  MS75
+//  2-4-24
+//  Here I altered the MESSAGE case so all messages typed by a client will be scanned for special characters
+                    String processedMessage = messageProcessor(p.getMessage());
+                    currentRoom.sendMessage(this, processedMessage);                } 
+                    else {
+//  New Code Ends
+//  MS75
+//  2-4-24 
                     // TODO migrate to lobby
                     Room.joinRoom(Constants.LOBBY, this);
                 }
@@ -235,13 +243,104 @@ public class ServerThread extends Thread {
                 List<String> potentialRooms = Room.listRooms(searchString, limit);
                 this.sendListRooms(potentialRooms);
                 break;
+  //    New Code Begins
+  //    MS75
+  //    2-3-24
+  //        Here I added the Cases for Payload Types FLIP, ROLL and HELLO.
+  //        I used HELLO as a starter to help me understand client and server side interactions.
+            case HELLO:
+                currentRoom.sendMessage(this, "hello, hello, hello");
+                break;
+            case FLIP:
+                String flip = flip();
+                currentRoom.sendMessage(this, flip);
+                
+                break;
+            case ROLL:
+                String roll = roll(p.getMessage());
+               currentRoom.sendMessage(this,roll);
+                break;
+//  New Code Ends
+//  MS75
+//  2-3-24
             default:
                 break;
 
         }
 
     }
+//  New Code Begins
+//  MS75
+//  2-3-24
+//      Flip method created that uses random number genrator to generate variable integer "X,"
+//      and if the number equals 0 then the string message uses Heads if it equals 1 then Tails. 
+private String flip() {
+    int x = (int) (Math.random() * 2); 
+    String result = (x == 0) ? "Heads" : "Tails";
+    return String.format(clientName+" flipped a coin and got: " +result);
+}
+//      Roll method created that first trims the String from switch case ROLL (line 259) and removes the command "/roll"
+//      Then the remainder string is split into an array of string which gets tested in an if else statment to see if the command
+//      format was met and if met for the first format a random number from 0 - the upper range sent by client is sent into a string message.
+//      If the second format is met then a for loop is used to calculate and append the output string message with the values of the rolled dice.
+//      The return type is String because I had issues having a integer or object return type because the second paramater for sendMessage() is a String.
 
+    private String roll(String roll) {
+        roll = roll.trim().substring("/roll".length()).trim(); 
+        String[] parts = roll.split("\\s+");
+    
+        StringBuilder newString = new StringBuilder();
+    
+        if (parts.length == 1 && parts[0].matches("\\d+")) {
+            int result = (int) (Math.random() * (Integer.parseInt(parts[0]) + 1));
+            newString.append("Rolled a ").append(result);
+        } else if (parts.length == 2 && parts[0].matches("\\d+") && parts[1].matches("\\d+d\\d+")) {
+            String[] diceParams = parts[1].split("d");
+            int diceCount = Integer.parseInt(diceParams[0]);
+            int faceCount = Integer.parseInt(diceParams[1]);
+            int total = 0;
+            newString.append("Rolled ");
+            for (int i = 0; i < diceCount; i++) {
+                int rollResult = (int) (Math.random() * faceCount) + 1;
+                newString.append(rollResult);
+                total += rollResult;
+                if (i < diceCount - 1) {
+                    newString.append(", ");
+                }
+            }
+            newString.append(" for a total of ").append(total);
+        } else {
+            newString.append("Incorrect Format. Use : '/roll x' or '/roll xdy'.");
+        }
+    
+        return newString.toString();
+    }
+    
+//      messageProcessor() method is created with a single string paramater apart of the switch case MESSAGE.
+//      First this method checks and replaces all text enclosed between *asteriks* with html tags <br></br>
+//      Second the method checks and replaces all text enclosed between -hyphens- with <i></i>  
+//      Third this method checls and replaces all text enclosed between _underscores_ with <u></u>
+//      Fourth the method checks and replaces all text enclosed between #rcolorr# with <font color='red'></font> as well as blue and green
+//      Lastly the method checks and replaces all text enclosed between *-_#rmultiple#_0* special characters with the corresponding tags
+    private String messageProcessor(String message) {
+        message = message.replaceAll("\\*(.*?)\\*", "<b>$1</b>");
+
+        message = message.replaceAll("\\-(.*?)\\-", "<i>$1</i>");
+
+        message = message.replaceAll("\\_(.*?)\\_", "<u>$1</u>");
+
+        message = message.replaceAll("\\#r(.*?)\\#", "<font color='red'>$1</font>");
+        message = message.replaceAll("\\#b(.*?)\\#", "<font color='blue'>$1</font>");
+        message = message.replaceAll("\\#g(.*?)\\#", "<font color='green'>$1</font>");
+
+        message = message.replaceAll("\\*\\-(.*?)\\-\\*", "<b><i><u>$1</u></i></b>");
+        message = message.replaceAll("\\-\\*(.*?)\\*\\-", "<i><u><font color='red'>$1</font></u></i>");
+
+        return message;
+    }
+//  New Code Ends
+//  MS75
+//  2-4-23
     private void cleanup() {
         info("Thread cleanup() start");
         try {
