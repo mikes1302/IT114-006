@@ -248,11 +248,13 @@ public class ServerThread extends Thread {
   //    2-3-24
   //        Here I added the Cases for Payload Types FLIP, ROLL and HELLO.
   //        I used HELLO as a starter to help me understand client and server side interactions.
-                case HELLO:
+            case HELLO:
                 currentRoom.sendMessage(this, "hello, hello, hello");
                 break;
             case FLIP:
-                flip();
+                String flip = flip();
+                currentRoom.sendMessage(this, flip);
+                
                 break;
             case ROLL:
                 String roll = roll(p.getMessage());
@@ -272,12 +274,12 @@ public class ServerThread extends Thread {
 //  2-3-24
 //      Flip method created that uses random number genrator to generate variable integer "X,"
 //      and if the number equals 0 then the string message uses Heads if it equals 1 then Tails. 
-    private void flip() {
-        int x = (int) (Math.random() * 2); 
-        String message = clientName + " flipped a coin and got: " + ((x == 0) ? "Heads" : "Tails");
-        sendMessage(this.getClientId(), message);
-    }
-//      Roll method created that first trims the String from switch case ROLL (line 257) and removes the command "/roll"
+private String flip() {
+    int x = (int) (Math.random() * 2); 
+    String result = (x == 0) ? "Heads" : "Tails";
+    return String.format(clientName+" flipped a coin and got: " +result);
+}
+//      Roll method created that first trims the String from switch case ROLL (line 259) and removes the command "/roll"
 //      Then the remainder string is split into an array of string which gets tested in an if else statment to see if the command
 //      format was met and if met for the first format a random number from 0 - the upper range sent by client is sent into a string message.
 //      If the second format is met then a for loop is used to calculate and append the output string message with the values of the rolled dice.
