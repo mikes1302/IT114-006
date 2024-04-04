@@ -244,9 +244,9 @@ public class ServerThread extends Thread {
                 this.sendListRooms(potentialRooms);
                 break;
   //    New Code Begins
-  //    MS75
-  //    2-3-24
-  //        Here I added the Cases for Payload Types FLIP, ROLL and HELLO.
+  //    MS75 
+  //    2-3-24  
+  //        Here I added the Cases for Payload Types FLIP, ROLL and HELLO
   //        I used HELLO as a starter to help me understand client and server side interactions.
             case HELLO:
                 currentRoom.sendMessage(this, "hello, hello, hello");
