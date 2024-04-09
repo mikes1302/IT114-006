@@ -15,6 +15,7 @@ import Project.Common.ConnectionPayload;
 import Project.Common.Constants;
 import Project.Common.Payload;
 import Project.Common.PayloadType;
+import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.TextFX;
 import Project.Common.TextFX.Color;
@@ -132,8 +133,9 @@ public enum Client {
      * 
      * @param text
      * @return true if a text was a command or triggered a command
+     * @throws IOException 
      */
-    private boolean processClientCommand(String text) {
+    private boolean processClientCommand(String text) throws IOException {
         if (isConnection(text)) {
             if (clientName.isBlank()) {
                 logger.warning("You must set your name before you can connect via: /name your_name");
@@ -205,15 +207,8 @@ public enum Client {
             }
             return true;
         }
- //     Here I added the /roll command into the processCommand() method          
-        else if (text.equalsIgnoreCase(ROLL_COMMAND)) {
-            try {
-                sendRoll(text); 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return true;
-        }
+ 
+
  //     Here I added the /flip command into the processCommand() method          
         else if (text.equalsIgnoreCase(FLIP_COMMAND)){
             try{
@@ -222,13 +217,46 @@ public enum Client {
                 e.printStackTrace();
             }
             return true;
-                }
+        }
+//     Here I added the /roll command into the processCommand() method          
+        else if (text.startsWith(ROLL_COMMAND)) {
+            String rollString = text.replace("/roll", "").trim();
+            try {
+                int result = roll(rollString);
+                sendRoll(result);
+}          catch (IOException e) {
+    sendMessage("Wrong Format. Use : '/roll x' or '/roll xdy'.");
+}
+return true;
+        }
         
         
 //  4-2-24
 //  MS75
 //  New Code Ends
         return false;
+    }
+// New Code MS75 4-6-24 I moved my roll command here as it was previously in the ServerThread.java class
+    private int roll(String roll) {
+        roll = roll.trim().substring("/roll".length()).trim();
+        String[] parts = roll.split("\\s+");
+
+        int result = 0;
+
+        if (parts.length == 1 && parts[0].matches("\\d+")) {
+            result = (int) (Math.random() * (Integer.parseInt(parts[0]) + 1));
+        } else if (parts.length == 2 && parts[0].matches("\\d+") && parts[1].matches("\\d+d\\d+")) {
+            String[] diceParams = parts[1].split("d");
+            int diceCount = Integer.parseInt(diceParams[0]);
+            int faceCount = Integer.parseInt(diceParams[1]);
+            for (int i = 0; i < diceCount; i++) {
+                result += (int) (Math.random() * faceCount) + 1;
+            }
+        } else {
+            throw new IllegalArgumentException("Wrong Format. Use : '/roll x' or '/roll xdy'.");
+        }
+
+        return result;
     }
 
     // Send methods
@@ -249,11 +277,10 @@ public enum Client {
         out.writeObject(p);
     }
     
-    private void sendRoll(String roll) throws IOException {
-        Payload p = new Payload();
-        p.setPayloadType(PayloadType.ROLL);
-        p.setMessage(roll);
-        out.writeObject(p);
+     private void sendRoll(int result) throws IOException {
+        RollPayload rp = new RollPayload();
+        rp.setResult(result);
+        out.writeObject(rp);
     }
 
 //  4-2-24
