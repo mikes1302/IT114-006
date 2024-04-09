@@ -11,6 +11,7 @@ import Project.Common.ConnectionPayload;
 import Project.Common.Constants;
 import Project.Common.Payload;
 import Project.Common.PayloadType;
+import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.TextFX;
 import Project.Common.TextFX.Color;
@@ -257,8 +258,14 @@ public class ServerThread extends Thread {
                 
                 break;
             case ROLL:
-                String roll = roll(p.getMessage());
-               currentRoom.sendMessage(this,roll);
+                try {
+                    RollPayload rp = (RollPayload) p;
+                    // Send roll result to the client
+                    sendMessage(getClientId(), "Rolled a " + rp.getResult());
+                } catch (Exception e) {
+                    // Handle invalid roll payload
+                    sendMessage(getClientId(), "Incorrect Format. Use : '/roll x' or '/roll xdy'.");
+                }
                 break;
 //  New Code Ends
 //  MS75
@@ -284,7 +291,7 @@ private String flip() {
 //      format was met and if met for the first format a random number from 0 - the upper range sent by client is sent into a string message.
 //      If the second format is met then a for loop is used to calculate and append the output string message with the values of the rolled dice.
 //      The return type is String because I had issues having a integer or object return type because the second paramater for sendMessage() is a String.
-
+/*
     private String roll(String roll) {
         roll = roll.trim().substring("/roll".length()).trim(); 
         String[] parts = roll.split("\\s+");
@@ -315,7 +322,7 @@ private String flip() {
     
         return newString.toString();
     }
-    
+   */ 
 //      messageProcessor() method is created with a single string paramater apart of the switch case MESSAGE.
 //      First this method checks and replaces all text enclosed between *asteriks* with html tags <br></br>
 //      Second the method checks and replaces all text enclosed between -hyphens- with <i></i>  
