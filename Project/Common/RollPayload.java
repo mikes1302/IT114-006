@@ -1,22 +1,21 @@
 package Project.Common;
 
-public class RollPayload extends Payload {
+public class RollPayload  extends Payload{
     private int result;
 
-    public RollPayload(PayloadType pt) {
-        setPayloadType(pt);
-    }
-
     public RollPayload() {
-        // Default to hide
-        this(PayloadType.ROLL);
+        // Default constructor
     }
 
-    public void setResult(int result) {
+    public RollPayload(int result) {
         this.result = result;
     }
 
     public int getResult() {
         return result;
+    }
+
+    public void setResult(int result) {
+        this.result = result;
     }
 }

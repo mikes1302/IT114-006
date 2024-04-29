@@ -148,7 +148,6 @@ public class ClientUI extends JFrame implements IClientEvents, ICardControls {
         int port = csPanel.getPort();
         setTitle(originalTitle + " - " + username);
         Client.INSTANCE.connect(host, port, username, this);
-        // TODO add connecting screen/notice
     }
 
     public static void main(String[] args) {

@@ -18,7 +18,6 @@ public class Problem1 {
         System.out.println("Processing Array:" + Arrays.toString(arr));
         System.out.println("Odds output:");
         //hint: use the arr variable; don't diretly use the a1-a4 variables
-        //TODO add/edit code here
         for (int num : arr) {
             if (num % 2 != 0) {
                 System.out.print(num + " ");

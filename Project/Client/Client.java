@@ -15,7 +15,6 @@ import Project.Common.ConnectionPayload;
 import Project.Common.Constants;
 import Project.Common.Payload;
 import Project.Common.PayloadType;
-import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.TextFX;
 import Project.Common.TextFX.Color;
@@ -38,7 +37,6 @@ public enum Client {
     private static final String LIST_ROOMS = "/listrooms";
     private static final String LIST_USERS = "/users";
     private static final String DISCONNECT = "/disconnect";
-// Added command Strigs for commands: /hello,/roll and /flip
     private static final String HELLO_COMMAND = "/hello";
     private static final String ROLL_COMMAND = "/roll";
     private static final String FLIP_COMMAND = "/flip";
@@ -202,10 +200,6 @@ public enum Client {
             }
             return true;
         }
- // New Code Begins
- // MS75
- // 4-2-24
- //     Here I added the test /Hello command into the processCommand() method 
         else if (text.equalsIgnoreCase(HELLO_COMMAND)) {
             try {
                 sendHello();
@@ -214,65 +208,35 @@ public enum Client {
             }
             return true;
         }
- 
-
- //     Here I added the /flip command into the processCommand() method          
-        else if (text.equalsIgnoreCase(FLIP_COMMAND)){
+         else if (text.equalsIgnoreCase(FLIP_COMMAND)){
             try{
                 sendFlip();
             } catch (IOException e){
                 e.printStackTrace();
             }
             return true;
-        }
-//     Here I added the /roll command into the processCommand() method          
+        }    
         else if (text.startsWith(ROLL_COMMAND)) {
-            String rollString = text.replace("/roll", "").trim();
             try {
-                int result = roll(rollString);
-                sendRoll(result);
-}          catch (IOException e) {
-    sendMessage("Wrong Format. Use : '/roll x' or '/roll xdy'.");
-}
-return true;
-        }
-        
-        
-//  4-2-24
-//  MS75
-//  New Code Ends
-        return false;
-    }
-// New Code MS75 4-6-24 I moved my roll command here as it was previously in the ServerThread.java class
-    private int roll(String roll) {
-        roll = roll.trim().substring("/roll".length()).trim();
-        String[] parts = roll.split("\\s+");
-
-        int result = 0;
-
-        if (parts.length == 1 && parts[0].matches("\\d+")) {
-            result = (int) (Math.random() * (Integer.parseInt(parts[0]) + 1));
-        } else if (parts.length == 2 && parts[0].matches("\\d+") && parts[1].matches("\\d+d\\d+")) {
-            String[] diceParams = parts[1].split("d");
-            int diceCount = Integer.parseInt(diceParams[0]);
-            int faceCount = Integer.parseInt(diceParams[1]);
-            for (int i = 0; i < diceCount; i++) {
-                result += (int) (Math.random() * faceCount) + 1;
+                String rollText = text.replace(ROLL_COMMAND,"").trim();
+                sendRoll(rollText);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } else {
-            throw new IllegalArgumentException("Wrong Format. Use : '/roll x' or '/roll xdy'.");
+            return true;
         }
-
-        return result;
-    }
-
+        
+    return false;
+}
     // Send methods
     
-//  New Code Begins
-//  MS75
-// 4-2-24   
-//      Here I added the send methods for payloadTypes: HELLO, FLIP and ROLL
-//      to allow the payloads to be created in the serverThreads
+    public void sendRoll(String rollText) throws IOException{
+        Payload p = new Payload();
+        p.setPayloadType(PayloadType.ROLL);
+        p.setMessage(rollText);
+        out.writeObject(p);
+}
+
     private void sendHello() throws IOException {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.HELLO);
@@ -283,16 +247,6 @@ return true;
         p.setPayloadType(PayloadType.FLIP);
         out.writeObject(p);
     }
-    
-     private void sendRoll(int result) throws IOException {
-        RollPayload rp = new RollPayload();
-        rp.setResult(result);
-        out.writeObject(rp);
-    }
-
-//  4-2-24
-//  MS75
-//  New Code Ends
     void sendDisconnect() throws IOException {
         ConnectionPayload cp = new ConnectionPayload();
         cp.setPayloadType(PayloadType.DISCONNECT);
