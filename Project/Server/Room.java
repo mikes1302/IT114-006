@@ -225,7 +225,7 @@ public class Room implements AutoCloseable {
                 int numberOfDice = Integer.parseInt(diceParts[0]);
                 int numberOfFaces = Integer.parseInt(diceParts[1]);
                 if (numberOfDice <= 0 || numberOfFaces <= 0) {
-                    client.sendMessage(client.getClientId(), "Invalid number of dice or faces.");
+                    client.sendMessage(client.getClientId(), "Invalid number");
                     return;
                 }
                 StringBuilder result = new StringBuilder();

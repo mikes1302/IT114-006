@@ -41,7 +41,6 @@ public class UserListPanel extends JPanel {
         this.add(wrapper, BorderLayout.CENTER);
 
         userListArea.addContainerListener(new ContainerListener() {
-
             @Override
             public void componentAdded(ContainerEvent e) {
                 if (userListArea.isVisible()) {
@@ -57,7 +56,6 @@ public class UserListPanel extends JPanel {
                     userListArea.repaint();
                 }
             }
-
         });
     }
 

@@ -17,6 +17,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -156,21 +157,36 @@ public class ChatPanel extends JPanel {
 
     public void addText(String text) {
         JPanel content = chatArea;
-        // add message
-        JEditorPane textContainer = new JEditorPane("text/plain", text);
-
-        // sizes the panel to attempt to take up the width of the container
-        // and expand in height based on word wrapping
-        textContainer.setLayout(null);
-        textContainer.setPreferredSize(
-                new Dimension(content.getWidth(), ClientUtils.calcHeightForText(this, text, content.getWidth())));
+        JLabel textContainer = new JLabel();
+        textContainer.setText("<html>" + messageProcessor(text) + "</html>");
+        textContainer.setPreferredSize(new Dimension(content.getWidth(), textContainer.getPreferredSize().height));
         textContainer.setMaximumSize(textContainer.getPreferredSize());
-        textContainer.setEditable(false);
-        ClientUtils.clearBackground(textContainer);
-        // add to container and tell the layout to revalidate
+        textContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
         content.add(textContainer);
-        // scroll down on new message
         JScrollBar vertical = ((JScrollPane) chatArea.getParent().getParent()).getVerticalScrollBar();
         vertical.setValue(vertical.getMaximum());
+    }
+
+//      messageProcessor() method is created with a single string paramater
+//      First this method checks and replaces all text enclosed between *asteriks* with html tags <br></br>
+//      Second the method checks and replaces all text enclosed between -hyphens- with <i></i>  
+//      Third this method checls and replaces all text enclosed between _underscores_ with <u></u>
+//      Fourth the method checks and replaces all text enclosed between #rcolorr# with <font color='red'></font> as well as blue and green
+//      Lastly the method checks and replaces all text enclosed between *-_#rmultiple#_0* special characters with the corresponding tags
+    private String messageProcessor(String message) {
+        message = message.replaceAll("\\*(.*?)\\*", "<b>$1</b>");
+
+        message = message.replaceAll("\\-(.*?)\\-", "<i>$1</i>");
+
+        message = message.replaceAll("\\_(.*?)\\_", "<u>$1</u>");
+
+        message = message.replaceAll("\\#r(.*?)\\#", "<font color='red'>$1</font>");
+        message = message.replaceAll("\\#b(.*?)\\#", "<font color='blue'>$1</font>");
+        message = message.replaceAll("\\#g(.*?)\\#", "<font color='green'>$1</font>");
+
+        message = message.replaceAll("\\*\\-(.*?)\\-\\*", "<b><i><u>$1</u></i></b>");
+        message = message.replaceAll("\\-\\*(.*?)\\*\\-", "<i><u><font color='red'>$1</font></u></i>");
+
+        return message;
     }
 }

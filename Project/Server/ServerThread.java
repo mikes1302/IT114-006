@@ -264,7 +264,7 @@ private String flip() {
     return String.format(clientName+" flipped a coin and got: " +result);
 }
 
-//      messageProcessor() method is created with a single string paramater apart of the switch case MESSAGE.
+//      messageProcessor() method is created with a single string paramater
 //      First this method checks and replaces all text enclosed between *asteriks* with html tags <br></br>
 //      Second the method checks and replaces all text enclosed between -hyphens- with <i></i>  
 //      Third this method checls and replaces all text enclosed between _underscores_ with <u></u>
