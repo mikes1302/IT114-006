@@ -240,4 +240,10 @@ public class ClientUI extends JFrame implements IClientEvents, ICardControls {
             chatPanel.addText("p.getMessage");
         }
     }
+
+    @Override
+    public void onMuteRecieve(long clientId, String message) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'onMuteRecieve'");
+    }
 }

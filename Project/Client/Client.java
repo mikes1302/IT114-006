@@ -485,9 +485,9 @@ private List<Long> mutedClients = new ArrayList<>();
                 clientsInRoom.clear();// we changed a room so likely need to clear the list
                 events.onResetUserList();
                 break;
-                case MESSAGE:
+            case MESSAGE:
                 // New Code Milestone 3 MS75 4-27-24 
-                // Mute Feature 
+                // Mute Feature and DM Feature
                 if (!isMuted(p.getClientId())) {
                     String originalMessage = p.getMessage();
                     String[] messageParts = originalMessage.split("\\s+", 2); 
@@ -517,6 +517,13 @@ private List<Long> mutedClients = new ArrayList<>();
                     events.onMessageReceive(p.getClientId(), originalMessage); 
                     System.out.println(message); 
                 }
+                break;
+                // New Code Milestone 3 MS75 4-27-24 
+                // Mute Feature and DM Feature
+            case MUTE:
+                String username = p.getMessage();
+                logger.info("User '" + username + "' has been muted.");
+                events.onMuteRecieve(p.getClientId(), p.getMessage());
                 break;
             case LIST_ROOMS:
                 try {
@@ -549,12 +556,6 @@ private List<Long> mutedClients = new ArrayList<>();
                 System.out.println(message);
                 events.onFlipReceive(p.getClientId(), p.getMessage());
                 break;            
-            case MUTE:
-                String username = p.getMessage();
-                logger.info("User '" + username + "' has been muted.");
-                // Handle the mute action in the UI if needed
-                break;
-          
             default:
                 break;
 
