@@ -183,6 +183,9 @@ public class ClientUI extends JFrame implements IClientEvents, ICardControls {
         if (currentCard.ordinal() >= CardView.CHAT.ordinal()) {
             String clientName = Client.INSTANCE.getClientNameFromId(clientId);
             chatPanel.addText(String.format("%s: %s", clientName, message));
+            // MS75 4-29-24 added a method in the chat panel to call everytime a message is recieved
+            // for the highlight last user to send message feature
+            chatPanel.lastMessageHighlight(clientId);
         }
     }
 

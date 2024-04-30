@@ -97,7 +97,23 @@ public class UserListPanel extends JPanel {
 
         content.add(textContainer);
     }
-
+    // MS75 4-29-24 Added highlightUser method that takes the clientID paramaeter
+    // and highlights the user who just sent a message as magenta, I kept running into issues using the 
+    // textFX file colors provided so i had to use the awt library
+    protected void highlightUser(long clientId) {
+        logger.log(Level.INFO, "Update color" + clientId);
+        Component[] cs = userListArea.getComponents();
+        for (Component c : cs) {
+            boolean isUser = c.getName().equals(clientId + "");
+            if (c instanceof JEditorPane) {
+                if (isUser) {
+                    ((JEditorPane) c).setForeground(java.awt.Color.MAGENTA); 
+                } else {
+                    ((JEditorPane) c).setForeground(java.awt.Color.BLACK); 
+                }
+            }
+        }
+    }    
     protected void removeUserListItem(long clientId) {
         logger.log(Level.INFO, "removing user list item for id " + clientId);
         Component[] cs = userListArea.getComponents();

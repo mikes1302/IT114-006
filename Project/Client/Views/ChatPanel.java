@@ -9,14 +9,24 @@ import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+// MS75 Added Import 4-29-24
+import java.io.File;
 import java.io.IOException;
+// MS75 Added Import 4-29-24
+
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+// MS75 Added Import 4-29-24
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
+// MS75 Added Import 4-29-24
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -55,6 +65,38 @@ public class ChatPanel extends JPanel {
         JTextField textValue = new JTextField();
         input.add(textValue);
         JButton button = new JButton("Send");
+    // MS75 4-29-24
+    // New export button to export chat history using Java File chooser and java printwriter
+    // as well as java simple date format to have unique filename
+    JButton export = new JButton("Export Chat");
+    input.add(export);
+    export.addActionListener((event) -> {
+    JFileChooser select = new JFileChooser();
+    int x = select.showSaveDialog(this);
+    if (x == JFileChooser.APPROVE_OPTION) {
+        File file = select.getSelectedFile();
+        
+        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd_hhmm a");
+        date.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+        String timeStamp = date.format(new Date());
+        String fileNameWithTimestamp = "chatHistory_" + timeStamp;
+        File fileWithTimestamp = new File(file.getParent(), fileNameWithTimestamp);
+            try (PrintWriter print = new PrintWriter(fileWithTimestamp)) {
+                for (Component component : chatArea.getComponents()) {
+                    if (component instanceof JEditorPane) {
+                        JEditorPane pane = (JEditorPane) component;
+                        String text = pane.getText();
+                        print.println(text.trim());
+                        print.println("\n");
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    });
+
+
         // lets us submit with the enter key instead of just the button click
         textValue.addKeyListener(new KeyListener() {
 
@@ -141,7 +183,11 @@ public class ChatPanel extends JPanel {
             }
         });
     }
-
+    // MS75 4-29-24 Added lastMessageHighlight method that takes the clientID paramaeter
+    // and calls the highlightUser method in the userListPanel.java file
+    public void lastMessageHighlight(long clientId){
+        userListPanel.highlightUser(clientId);
+    }
     public void addUserListItem(long clientId, String clientName) {
         userListPanel.addUserListItem(clientId, clientName);
     }
@@ -196,3 +242,4 @@ public class ChatPanel extends JPanel {
         vertical.setValue(vertical.getMaximum());
     }
 }
+
