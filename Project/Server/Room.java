@@ -3,6 +3,7 @@ package Project.Server;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import Project.Common.Constants;
@@ -21,6 +22,9 @@ public class Room implements AutoCloseable {
     // private final static String DISCONNECT = "disconnect";
     // private final static String LOGOUT = "logout";
     // private final static String LOGOFF = "logoff";
+    private static final String FLIP_COMMAND = "flip";
+    private static final String ROLL_COMMAND = "roll";
+
     private Logger logger = Logger.getLogger(Room.class.getName());
 
     public Room(String name) {
@@ -114,6 +118,62 @@ public class Room implements AutoCloseable {
                      * Room.disconnectClient(client, this);
                      * break;
                      */
+
+                //MS75 4-28-24
+                /* Addded flip and roll cases here for the sake of getting the command to work since 
+                    my previous methods no longer work with the payload */
+                    case FLIP_COMMAND:    
+                        Random random = new Random();
+                        int num = random.nextInt(2);
+                        if (num == 0) {
+                            sendMessage(client, "<font color='blue'><b>Flipped a coin and got heads</b></font>");
+                        } else {
+                            sendMessage(client, "<font color='blue'><b>Flipped a coin and got tails</b></font>");
+                        }
+                        break;
+                    case ROLL_COMMAND:
+                        String[] parts = message.trim().split("\\s+");
+                        String error = "Invalid roll format";
+                    
+                        if (parts.length == 2 && (parts[1].matches("\\d+d\\d+") || parts[1].matches("\\d+"))) {
+                            try {
+                                String result;
+                                if (parts[1].matches("\\d+d\\d+")) {
+                                    // Handling the format "XdY"
+                                    String[] diceParts = parts[1].split("d");
+                                    int numberOfDice = Integer.parseInt(diceParts[0]);
+                                    int numberOfFaces = Integer.parseInt(diceParts[1]);
+                    
+                                    if (numberOfDice <= 0 || numberOfFaces <= 0) {
+                                        sendMessage(client, "<font color='red'>" + error + "</font>");
+                                    }
+                    
+                                    StringBuilder rollResult = new StringBuilder();
+                                    int total = 0;
+                                    for (int i = 0; i < numberOfDice; i++) {
+                                        int diceRoll = (int) (Math.random() * numberOfFaces) + 1;
+                                        total += diceRoll;
+                                        rollResult.append(diceRoll);
+                                        if (i < numberOfDice - 1) {
+                                            rollResult.append(", ");
+                                        }
+                                    }
+                                    result = String.format("**%s** rolled %dd%d and got %s with a Total of: %d", client.getClientName(), numberOfDice, numberOfFaces, rollResult.toString(), total);
+                                } else {
+                                    int max = Integer.parseInt(parts[1]);
+                                    int rollResult = (int) (Math.random() * (max - 1 + 1)) + 1;
+                                    result = String.format("**%s** rolled: %d", client.getClientName(), rollResult);
+                                }
+                    
+                                sendMessage(client, "<font color='green'><b>" + result + "</b></font>");
+                            } catch (NumberFormatException e) {
+                                sendMessage(client, "*" + error  + "*");
+                            }
+                        } else {
+                            sendMessage(client, "<font color='red'>" + error + "</font>");
+                        }
+                        break;
+                                        
                     default:
                         wasCommand = false;
                         break;
