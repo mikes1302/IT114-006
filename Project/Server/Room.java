@@ -97,27 +97,6 @@ public class Room implements AutoCloseable {
                 // String roomName;
                 wasCommand = true;
                 switch (command) {
-/*/  New Code Starts 
-//  MS75
-//  4-2-24
-                    case "hello":
-                    sendMessage(client, "hello, hello, hello");
-                    break;
-                    case "flip":
-                    flip(client);
-                    break;
-                    case "roll": 
-                    if (comm2.length > 1) {
-                        roll(client, comm2[1]);
-                    } else {
-                        sendMessage(client, "type /roll n or ndn where n is a number ");
-//                 logger.warning(String.format("type /roll n or ndn where n is a number"));
-
-                    }
-                    break;
-//
-//
-//  New Code Ends  */ 
                     /*
                      * case CREATE_ROOM:
                      * roomName = comm2[1];
@@ -231,60 +210,67 @@ public class Room implements AutoCloseable {
         checkClients();
         sendMessage(null, client.getClientName() + " disconnected");
     }
-/*/  New Code Starts
-//  MS75
-//  4-2-24
-private void flip(ServerThread client) {
-    boolean isHeads = Math.random() < 0.5;
-    String flip = isHeads ? "Heads" : "Tails";
-    sendMessage(client, flip);
-}
-
-    private void roll(ServerThread client, String param) {
-        if (param.matches("\\d+d\\d+")) { 
-            String[] parts = param.split("d");
-            int numberOfDice = Integer.parseInt(parts[0]);
-            int faces = Integer.parseInt(parts[1]);
-            int total = 0;
-            StringBuilder result = new StringBuilder();
-            result.append("Rolled ");
-            for (int i = 0; i < numberOfDice; i++) {
-                int roll = (int) (Math.random() * faces) + 1;
-                result.append(roll);
-                total += roll;
-                if (i < numberOfDice - 1) {
-                    result.append(", ");
-                }
-            }
-            result.append(" for a total of ").append(total);
-            sendMessage(client, result.toString());
-        } else {
-            int end;
-            try {
-                end = Integer.parseInt(param);
-            } catch (NumberFormatException e) {
-            logger.warning(String.format("\"Wrong format type /roll n where n is a number or ndn to roll dice where the first number\"\n" +
-                                " is the number of dice and the second number is the face on the dices.\""));
-                return;
-            }
-            if (end <= 0) {
-                logger.warning(String.format("Please use a number greater than 0"));
-                return;
-            }
-    
-            int value = (int) (Math.random() * (end + 1));
-            sendMessage(client, String.format("Rolled a %d", value));
-        }
-    }
-    
-
-//
-//
-//  New Code Ends */
     public void close() {
         Server.INSTANCE.removeRoom(this);
         // server = null;
         isRunning = false;
         clients = null;
+    }
+    
+    protected static void Roll(String roll, ServerThread client) {
+        String[] parts = roll.trim().split("\\s+");
+        String error ="Invalid number";
+       
+        if (parts.length == 2 && parts[1].matches("\\d+d\\d+")) {
+            try {
+                String[] diceParts = parts[1].split("d");
+                int numberOfDice = Integer.parseInt(diceParts[0]);
+                int numberOfFaces = Integer.parseInt(diceParts[1]);
+                if (numberOfDice <= 0 || numberOfFaces <= 0) {
+                    client.sendRoll(client.getClientId(), error);
+                    return;
+                }
+                StringBuilder result = new StringBuilder();
+                result.append(String.format("%s rolled %dd%d: ", client.getClientName(), numberOfDice, numberOfFaces));
+                int total = 0;
+                for (int i = 0; i < numberOfDice; i++) {
+                    int diceRoll = (int) (Math.random() * numberOfFaces) + 1; 
+                    total += diceRoll;
+                    result.append(diceRoll);
+                    if (i < numberOfDice - 1) {
+                        result.append(", ");
+                    }
+                }
+                result.append(String.format(" (Total: %d)", total));
+                // Send the result to the client using sendRoll
+                client.sendRoll(client.getClientId(), result.toString()); 
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                client.sendRoll(client.getClientId(), error);
+            }
+       
+        } else if (parts.length == 1 && parts[0].matches("\\d+")) {
+            try {
+                int max = Integer.parseInt(parts[0]);
+                int start = 0; // Starting value is 0 
+                int rollResult = (int) (Math.random() * (max - start + 1)) + start;
+                String message = String.format("%s rolled: %d", client.getClientName(), rollResult);
+                // Send the result to the client using sendRoll
+                client.sendRoll(client.getClientId(), message); 
+            } catch (NumberFormatException e) {
+                client.sendRoll(client.getClientId(), error);
+            }
+        } else {
+            client.sendRoll(client.getClientId(), error);
+        }
+    }
+// New Code Milestone 3 MS75 4-27-24 
+// Mute Feature 
+    private List<Long> mutedClients = new ArrayList<>(); 
+
+    protected void mute(long clientIdToMute, ServerThread sender) {
+        mutedClients.add(clientIdToMute); 
+        sender.sendMute(clientIdToMute);
+    
+    
     }
 }

@@ -11,7 +11,6 @@ import Project.Common.ConnectionPayload;
 import Project.Common.Constants;
 import Project.Common.Payload;
 import Project.Common.PayloadType;
-import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.TextFX;
 import Project.Common.TextFX.Color;
@@ -92,6 +91,14 @@ public class ServerThread extends Thread {
         return send(cp);
     }
 
+    public boolean sendRoll(long from, String message){
+        Payload p = new Payload();
+        p.setPayloadType(PayloadType.ROLL);
+        p.setClientId(from);
+        p.setMessage(message);
+        return send(p);
+    }
+
     protected boolean sendJoinRoom(String roomName) {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.JOIN_ROOM);
@@ -115,8 +122,16 @@ public class ServerThread extends Thread {
         }
         return send(rp);
     }
-
-    public boolean sendMessage(long from, String message) {
+    // New Code Milestone 3 MS75 4-27-24 
+    // Mute Feature 
+    public boolean sendMute(long clientIdToMute) {
+        Payload p = new Payload();
+        p.setPayloadType(PayloadType.MUTE);
+        p.setClientId(clientIdToMute);
+        p.setMessage("You have been muted by the server."); 
+        return send(p);
+    }
+        public boolean sendMessage(long from, String message) {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.MESSAGE);
         // p.setClientName(from);
@@ -212,19 +227,24 @@ public class ServerThread extends Thread {
                 break;
             case MESSAGE:
                 if (currentRoom != null) {
-//  New Code Begins
-//  MS75
-//  2-4-24
-//  Here I altered the MESSAGE case so all messages typed by a client will be scanned for special characters
+
                     String processedMessage = messageProcessor(p.getMessage());
                     currentRoom.sendMessage(this, processedMessage);                } 
                     else {
-//  New Code Ends
-//  MS75
-//  2-4-24 
                     // TODO migrate to lobby
                     Room.joinRoom(Constants.LOBBY, this);
                 }
+                break;
+            case ROLL:
+                Room.Roll(p.getMessage(), this);
+                //currentRoom.sendRoll(this,p.getMessage());
+                break;
+        // New Code Milestone 3 MS75 4-27-24 
+        // Mute Feature 
+            case MUTE:
+                long clientIdToMute = Long.parseLong(p.getMessage());
+                if (currentRoom != null) {
+                currentRoom.mute(clientIdToMute, this); }                
                 break;
             case CREATE_ROOM:
                 Room.createRoom(p.getMessage(), this);
@@ -244,32 +264,13 @@ public class ServerThread extends Thread {
                 List<String> potentialRooms = Room.listRooms(searchString, limit);
                 this.sendListRooms(potentialRooms);
                 break;
-  //    New Code Begins
-  //    MS75 
-  //    2-3-24  
-  //        Here I added the Cases for Payload Types FLIP, ROLL and HELLO
-  //        I used HELLO as a starter to help me understand client and server side interactions.
             case HELLO:
                 currentRoom.sendMessage(this, "hello, hello, hello");
                 break;
             case FLIP:
                 String flip = flip();
                 currentRoom.sendMessage(this, flip);
-                
                 break;
-            case ROLL:
-                try {
-                    RollPayload rp = (RollPayload) p;
-                    // Send roll result to the client
-                    sendMessage(getClientId(), "Rolled a " + rp.getResult());
-                } catch (Exception e) {
-                    // Handle invalid roll payload
-                    sendMessage(getClientId(), "Incorrect Format. Use : '/roll x' or '/roll xdy'.");
-                }
-                break;
-//  New Code Ends
-//  MS75
-//  2-3-24
             default:
                 break;
 
@@ -286,44 +287,8 @@ private String flip() {
     String result = (x == 0) ? "Heads" : "Tails";
     return String.format(clientName+" flipped a coin and got: " +result);
 }
-//      Roll method created that first trims the String from switch case ROLL (line 259) and removes the command "/roll"
-//      Then the remainder string is split into an array of string which gets tested in an if else statment to see if the command
-//      format was met and if met for the first format a random number from 0 - the upper range sent by client is sent into a string message.
-//      If the second format is met then a for loop is used to calculate and append the output string message with the values of the rolled dice.
-//      The return type is String because I had issues having a integer or object return type because the second paramater for sendMessage() is a String.
-/*
-    private String roll(String roll) {
-        roll = roll.trim().substring("/roll".length()).trim(); 
-        String[] parts = roll.split("\\s+");
-    
-        StringBuilder newString = new StringBuilder();
-    
-        if (parts.length == 1 && parts[0].matches("\\d+")) {
-            int result = (int) (Math.random() * (Integer.parseInt(parts[0]) + 1));
-            newString.append("Rolled a ").append(result);
-        } else if (parts.length == 2 && parts[0].matches("\\d+") && parts[1].matches("\\d+d\\d+")) {
-            String[] diceParams = parts[1].split("d");
-            int diceCount = Integer.parseInt(diceParams[0]);
-            int faceCount = Integer.parseInt(diceParams[1]);
-            int total = 0;
-            newString.append("Rolled ");
-            for (int i = 0; i < diceCount; i++) {
-                int rollResult = (int) (Math.random() * faceCount) + 1;
-                newString.append(rollResult);
-                total += rollResult;
-                if (i < diceCount - 1) {
-                    newString.append(", ");
-                }
-            }
-            newString.append(" for a total of ").append(total);
-        } else {
-            newString.append("Incorrect Format. Use : '/roll x' or '/roll xdy'.");
-        }
-    
-        return newString.toString();
-    }
-   */ 
-//      messageProcessor() method is created with a single string paramater apart of the switch case MESSAGE.
+
+//      messageProcessor() method is created with a single string paramater
 //      First this method checks and replaces all text enclosed between *asteriks* with html tags <br></br>
 //      Second the method checks and replaces all text enclosed between -hyphens- with <i></i>  
 //      Third this method checls and replaces all text enclosed between _underscores_ with <u></u>

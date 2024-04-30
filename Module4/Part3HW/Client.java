@@ -147,6 +147,7 @@ private String playerName;
     //not sure if i need this anymore 
    private String Name() {
     System.out.println("Enter Your FIRST Name:");
+    @SuppressWarnings("resource")
     Scanner si = new Scanner(System.in);
     return si.nextLine();
    }

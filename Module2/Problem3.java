@@ -21,7 +21,6 @@ public class Problem3 {
         //your code should set the indexes of this array
         Object[] output = new Object[arr.length];
         //hint: use the arr variable; don't diretly use the a1-a4 variables
-        //TODO convert each value to positive
         //set the result to the proper index of the output array
         //hint: don't forget to handle the data types properly, the result datatype should be the same as the original datatype
         for (int i = 0; i < arr.length; i++) {
