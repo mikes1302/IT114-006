@@ -17,7 +17,6 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -154,25 +153,8 @@ public class ChatPanel extends JPanel {
     public void clearUserList() {
         userListPanel.clearUserList();
     }
-
-    public void addText(String text) {
-        JPanel content = chatArea;
-        JLabel textContainer = new JLabel();
-        textContainer.setText("<html>" + messageProcessor(text) + "</html>");
-        textContainer.setPreferredSize(new Dimension(content.getWidth(), textContainer.getPreferredSize().height));
-        textContainer.setMaximumSize(textContainer.getPreferredSize());
-        textContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
-        content.add(textContainer);
-        JScrollBar vertical = ((JScrollPane) chatArea.getParent().getParent()).getVerticalScrollBar();
-        vertical.setValue(vertical.getMaximum());
-    }
-
-//      messageProcessor() method is created with a single string paramater
-//      First this method checks and replaces all text enclosed between *asteriks* with html tags <br></br>
-//      Second the method checks and replaces all text enclosed between -hyphens- with <i></i>  
-//      Third this method checls and replaces all text enclosed between _underscores_ with <u></u>
-//      Fourth the method checks and replaces all text enclosed between #rcolorr# with <font color='red'></font> as well as blue and green
-//      Lastly the method checks and replaces all text enclosed between *-_#rmultiple#_0* special characters with the corresponding tags
+// New Code Milestone 3 MS75 4-27-24 
+// Custom Formatting Feature 
     private String messageProcessor(String message) {
         message = message.replaceAll("\\*(.*?)\\*", "<b>$1</b>");
 
@@ -188,5 +170,29 @@ public class ChatPanel extends JPanel {
         message = message.replaceAll("\\-\\*(.*?)\\*\\-", "<i><u><font color='red'>$1</font></u></i>");
 
         return message;
+    }
+    public void addText(String text) {
+        JPanel content = chatArea;
+        // New Code Milestone 3 MS75 4-27-24 
+        // Custom Formatting Feature 
+        text = messageProcessor(text);
+        // add message
+        // New Code Milestone 3 MS75 4-27-24 
+        // Custom Formatting Feature 
+        JEditorPane textContainer = new JEditorPane("text/html", "<html>" + text + "</html>");
+
+        // sizes the panel to attempt to take up the width of the container
+        // and expand in height based on word wrapping
+        textContainer.setLayout(null);
+        textContainer.setPreferredSize(
+                new Dimension(content.getWidth(), ClientUtils.calcHeightForText(this, text, content.getWidth())));
+        textContainer.setMaximumSize(textContainer.getPreferredSize());
+        textContainer.setEditable(false);
+        ClientUtils.clearBackground(textContainer);
+        // add to container and tell the layout to revalidate
+        content.add(textContainer);
+        // scroll down on new message
+        JScrollBar vertical = ((JScrollPane) chatArea.getParent().getParent()).getVerticalScrollBar();
+        vertical.setValue(vertical.getMaximum());
     }
 }

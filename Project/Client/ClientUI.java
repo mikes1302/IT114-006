@@ -227,4 +227,17 @@ public class ClientUI extends JFrame implements IClientEvents, ICardControls {
             chatPanel.addText("Joined room " + roomName);
         }
     }
+/* */
+    @Override
+    public void onRollReceive(long id, String message) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'onRollReceive'");
+    }
+
+    @Override
+    public void onFlipReceive(long Id, String message) {
+        if (currentCard.ordinal()>= CardView.CHAT.ordinal()){
+            chatPanel.addText("p.getMessage");
+        }
+    }
 }

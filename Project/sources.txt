@@ -6,7 +6,6 @@
 ./Common/PayloadType.java
 ./Common/RoomResultsPayload.java
 ./Common/TextFX.java
-./Common/RollPayload.java
 ./Common/Constants.java
 ./Client/Client.java
 ./Client/IClientEvents.java

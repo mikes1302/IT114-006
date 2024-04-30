@@ -91,6 +91,14 @@ public class ServerThread extends Thread {
         return send(cp);
     }
 
+    public boolean sendRoll(long from, String message){
+        Payload p = new Payload();
+        p.setPayloadType(PayloadType.ROLL);
+        p.setClientId(from);
+        p.setMessage(message);
+        return send(p);
+    }
+
     protected boolean sendJoinRoom(String roomName) {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.JOIN_ROOM);
@@ -114,8 +122,16 @@ public class ServerThread extends Thread {
         }
         return send(rp);
     }
-
-    public boolean sendMessage(long from, String message) {
+    // New Code Milestone 3 MS75 4-27-24 
+    // Mute Feature 
+    public boolean sendMute(long clientIdToMute) {
+        Payload p = new Payload();
+        p.setPayloadType(PayloadType.MUTE);
+        p.setClientId(clientIdToMute);
+        p.setMessage("You have been muted by the server."); 
+        return send(p);
+    }
+        public boolean sendMessage(long from, String message) {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.MESSAGE);
         // p.setClientName(from);
@@ -219,6 +235,17 @@ public class ServerThread extends Thread {
                     Room.joinRoom(Constants.LOBBY, this);
                 }
                 break;
+            case ROLL:
+                Room.Roll(p.getMessage(), this);
+                //currentRoom.sendRoll(this,p.getMessage());
+                break;
+        // New Code Milestone 3 MS75 4-27-24 
+        // Mute Feature 
+            case MUTE:
+                long clientIdToMute = Long.parseLong(p.getMessage());
+                if (currentRoom != null) {
+                currentRoom.mute(clientIdToMute, this); }                
+                break;
             case CREATE_ROOM:
                 Room.createRoom(p.getMessage(), this);
                 break;
@@ -243,9 +270,6 @@ public class ServerThread extends Thread {
             case FLIP:
                 String flip = flip();
                 currentRoom.sendMessage(this, flip);
-                break;
-            case ROLL:
-                Room.Roll(p.getMessage(), this);
                 break;
             default:
                 break;

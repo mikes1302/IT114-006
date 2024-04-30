@@ -41,6 +41,7 @@ public class UserListPanel extends JPanel {
         this.add(wrapper, BorderLayout.CENTER);
 
         userListArea.addContainerListener(new ContainerListener() {
+
             @Override
             public void componentAdded(ContainerEvent e) {
                 if (userListArea.isVisible()) {
@@ -56,6 +57,7 @@ public class UserListPanel extends JPanel {
                     userListArea.repaint();
                 }
             }
+
         });
     }
 
@@ -76,6 +78,23 @@ public class UserListPanel extends JPanel {
         // otherwise)
         ClientUtils.clearBackground(textContainer);
         // add to container
+   /*  New Code Milestone 3 MS75 4-27-24
+   // Mute Feature DID NOT WORK
+       JButton muteButton = new JButton("Mute");
+       muteButton.addActionListener((event) -> {
+           try {
+               Client.INSTANCE.sendMute(clientId); }
+               catch (IOException e) {
+                  e.printStackTrace();
+                }
+           }
+        );
+  
+        JPanel userPanel = new JPanel(new BorderLayout());
+        userPanel.add(textContainer, BorderLayout.CENTER);
+        userPanel.add(muteButton, BorderLayout.EAST);
+   */  
+
         content.add(textContainer);
     }
 

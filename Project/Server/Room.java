@@ -216,16 +216,18 @@ public class Room implements AutoCloseable {
         isRunning = false;
         clients = null;
     }
-
+    
     protected static void Roll(String roll, ServerThread client) {
         String[] parts = roll.trim().split("\\s+");
+        String error ="Invalid number";
+       
         if (parts.length == 2 && parts[1].matches("\\d+d\\d+")) {
             try {
                 String[] diceParts = parts[1].split("d");
                 int numberOfDice = Integer.parseInt(diceParts[0]);
                 int numberOfFaces = Integer.parseInt(diceParts[1]);
                 if (numberOfDice <= 0 || numberOfFaces <= 0) {
-                    client.sendMessage(client.getClientId(), "Invalid number");
+                    client.sendRoll(client.getClientId(), error);
                     return;
                 }
                 StringBuilder result = new StringBuilder();
@@ -240,22 +242,35 @@ public class Room implements AutoCloseable {
                     }
                 }
                 result.append(String.format(" (Total: %d)", total));
-                client.sendMessage(client.getClientId(), result.toString()); 
+                // Send the result to the client using sendRoll
+                client.sendRoll(client.getClientId(), result.toString()); 
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                client.sendMessage(client.getClientId(), "Invalid roll command format. Please use '/roll #d#'.");
+                client.sendRoll(client.getClientId(), error);
             }
+       
         } else if (parts.length == 1 && parts[0].matches("\\d+")) {
             try {
                 int max = Integer.parseInt(parts[0]);
                 int start = 0; // Starting value is 0 
                 int rollResult = (int) (Math.random() * (max - start + 1)) + start;
                 String message = String.format("%s rolled: %d", client.getClientName(), rollResult);
-                client.sendMessage(client.getClientId(), message); 
+                // Send the result to the client using sendRoll
+                client.sendRoll(client.getClientId(), message); 
             } catch (NumberFormatException e) {
-                client.sendMessage(client.getClientId(), "Invalid format./roll 0 - X or /roll 2d3");
+                client.sendRoll(client.getClientId(), error);
             }
         } else {
-            client.sendMessage(client.getClientId(), "Invalid format./roll 0 - X or /roll 2d3");
+            client.sendRoll(client.getClientId(), error);
         }
+    }
+// New Code Milestone 3 MS75 4-27-24 
+// Mute Feature 
+    private List<Long> mutedClients = new ArrayList<>(); 
+
+    protected void mute(long clientIdToMute, ServerThread sender) {
+        mutedClients.add(clientIdToMute); 
+        sender.sendMute(clientIdToMute);
+    
+    
     }
 }

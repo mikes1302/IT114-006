@@ -63,4 +63,10 @@ public interface IClientEvents {
      * @param roomName
      */
     void onRoomJoin(String roomName);
+// MS75 4-26-24 recieves roll when the /roll command is triggered
+    void onRollReceive(long id, String message);
+
+// MS75 4-26-24 recieves roll when the /flip command is triggered
+
+    void onFlipReceive(long Id, String message);
 }

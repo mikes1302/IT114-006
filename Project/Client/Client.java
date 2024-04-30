@@ -5,7 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +40,9 @@ public enum Client {
     private static final String HELLO_COMMAND = "/hello";
     private static final String ROLL_COMMAND = "/roll";
     private static final String FLIP_COMMAND = "/flip";
+    // New Code Milestone 3 MS75 4-27-24 
+    // Mute Feature 
+    private static final String MUTE_COMMAND = "/mute";
 
     // client id, is the key, client name is the value
     private ConcurrentHashMap<Long, String> clientsInRoom = new ConcurrentHashMap<Long, String>();
@@ -48,6 +51,22 @@ public enum Client {
    // CAllback that updates the UI
     private static IClientEvents events;
 
+    // New Code Milestone 3 MS75 4-27-24 
+    // Mute Feature 
+
+private List<Long> mutedClients = new ArrayList<>();
+
+    public void muteClient(long clientId) {
+        mutedClients.add(clientId);
+    }
+
+    public void unmuteClient(long clientId) {
+        mutedClients.remove(clientId);
+    }
+
+    private boolean isMuted(long clientId) {
+        return mutedClients.contains(clientId);
+    }
 
 
     public boolean isConnected() {
@@ -225,10 +244,43 @@ public enum Client {
             }
             return true;
         }
+    // New Code Milestone 3 MS75 4-27-24 
+    // Mute Feature 
+        else if (text.startsWith(MUTE_COMMAND)) {
+        String[] parts = text.split(" ");
+        if (parts.length >= 2) {
+            String clientName = parts[1].trim(); 
+            long clientId = getClientIdByName(clientName);
+            if (clientId != -1) {
+                try {
+                    sendMute(clientId);
+                    return true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return true;
+                }
+            } else {
+                logger.warning("Client '" + clientName + "' not found.");
+                return true;
+            }
+        } else {
+            logger.warning("Invalid mute command format. Usage: /mute clientName");
+            return true;
+        }
+    }
         
     return false;
 }
     // Send methods
+
+    // New Code Milestone 3 MS75 4-27-24 
+    // Mute Feature 
+    public void sendMute(long clientIdToMute) throws IOException {
+        Payload p = new Payload();
+        p.setPayloadType(PayloadType.MUTE);
+        p.setMessage(String.valueOf(clientIdToMute)); // Convert client ID to string and set it as the message
+        out.writeObject(p);
+    }
     
     public void sendRoll(String rollText) throws IOException{
         Payload p = new Payload();
@@ -433,13 +485,38 @@ public enum Client {
                 clientsInRoom.clear();// we changed a room so likely need to clear the list
                 events.onResetUserList();
                 break;
-            case MESSAGE:
-
-                message = TextFX.colorize(String.format("%s: %s",
-                        getClientNameFromId(p.getClientId()),
-                        p.getMessage()), Color.BLUE);
-                System.out.println(message);
-                events.onMessageReceive(p.getClientId(), p.getMessage());
+                case MESSAGE:
+                // New Code Milestone 3 MS75 4-27-24 
+                // Mute Feature 
+                if (!isMuted(p.getClientId())) {
+                    String originalMessage = p.getMessage();
+                    String[] messageParts = originalMessage.split("\\s+", 2); 
+                    String recipientName = null;
+                    String messageContent = originalMessage; 
+    
+                    if (messageParts.length > 1 && messageParts[0].startsWith("@")) {
+                        recipientName = messageParts[0].substring(1); 
+                        messageContent = messageParts[1]; 
+                    }
+    
+                    if (recipientName != null) {
+                        long recipientId = getClientIdByName(recipientName);
+                        if (recipientId != -1) {
+                            message = TextFX.colorize(String.format("(Private) %s: %s", getClientNameFromId(p.getClientId()), messageContent), Color.CYAN);
+                            events.onMessageReceive(p.getClientId(), messageContent); 
+                            events.onMessageReceive(recipientId, messageContent); 
+                            return; 
+                        } else {
+                            message = TextFX.colorize(String.format("User '%s' not found", recipientName), Color.RED);
+                            events.onMessageReceive(p.getClientId(), message); 
+                            return; 
+                        }
+                    }
+    
+                    message = TextFX.colorize(String.format("%s: %s", getClientNameFromId(p.getClientId()), originalMessage), Color.BLUE);
+                    events.onMessageReceive(p.getClientId(), originalMessage); 
+                    System.out.println(message); 
+                }
                 break;
             case LIST_ROOMS:
                 try {
@@ -460,12 +537,39 @@ public enum Client {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                break;            default:
+                break;   
+//New case MS75 4-26-24
+            case ROLL:
+                message = TextFX.colorize(p.getMessage(), Color.CYAN);
+                System.out.println(message);
+                events.onRollReceive(p.getClientId(), p.getMessage());
+                break;
+            case FLIP:
+                message = TextFX.colorize(p.getMessage(), Color.CYAN);
+                System.out.println(message);
+                events.onFlipReceive(p.getClientId(), p.getMessage());
+                break;            
+            case MUTE:
+                String username = p.getMessage();
+                logger.info("User '" + username + "' has been muted.");
+                // Handle the mute action in the UI if needed
+                break;
+          
+            default:
                 break;
 
         }
     }
 
+    
+    private long getClientIdByName(String name) {
+        for (Long id : clientsInRoom.keySet()) {
+            if (clientsInRoom.get(id).equals(name)) {
+                return id;
+            }
+        }
+        return -1; // Return -1 if the client name is not found
+    }
     public void start() throws IOException {
         listenForKeyboard();
     }
@@ -513,10 +617,9 @@ public enum Client {
     }
 
     public static void main(String[] args) {
-        Client client = Client.INSTANCE; // new Client();
+        Client client = Client.INSTANCE; 
 
         try {
-            // if start is private, it's valid here since this main is part of the class
             client.start();
         } catch (IOException e) {
             e.printStackTrace();
