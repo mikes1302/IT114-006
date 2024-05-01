@@ -1,6 +1,6 @@
 # Proposal for IT-114 006 - Mike Singh - Project Choice: Chatroom
 
-[Link to Video](ADD LINK after im done)
+[Link to my YouTube video demo](https://www.youtube.com/watch?v=IVME2W1mK7M&t=554s)
 
 ## Milestones:
 1. [Milestone 1 Submission](https://github.com/mikes1302/MS75-IT114-006/blob/main/Project/ms75_it114-project-milestone-1_IT114-006-S2024.pdf)
